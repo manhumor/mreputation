@@ -1,0 +1,16 @@
+name: MReputation
+version: '${version}'
+main: me.manhumor.mreputation.MReputation
+api-version: '1.16'
+depend: [PlaceholderAPI]
+commands:
+  mreputation:
+    aliases:
+      - reputation
+      - mrep
+      - rep
+permissions:
+  mreputation.use:
+    description: Permission to use the reputation command
+  mreputation.reset:
+    description: Permission to use the reputation reset command
