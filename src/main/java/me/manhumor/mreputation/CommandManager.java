@@ -52,9 +52,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) {
-            return true;
-        }
+        if (!(sender instanceof Player)) return true;
 
         Player player = (Player) sender;
         String playerName = player.getName();
@@ -77,14 +75,14 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         String playerMentionedName = playerMentioned.getName();
 
-        if (playerName.equalsIgnoreCase(playerMentionedName) && !args[1].equalsIgnoreCase("reset")) {
-            player.sendMessage(cantBetYourself);
-            return true;
-        }
-
         int reputation = instance.getReputation(playerMentionedName);
 
         if (dispatcherMap.containsKey(args[1])) {
+            if (playerName.equalsIgnoreCase(playerMentionedName) && !args[1].equalsIgnoreCase("reset")) {
+                player.sendMessage(cantBetYourself);
+                return true;
+            }
+
             switch (args[1]) {
                 case "+":
                     reputation++;
