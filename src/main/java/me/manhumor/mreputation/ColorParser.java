@@ -2,6 +2,8 @@ package me.manhumor.mreputation;
 
 import net.md_5.bungee.api.ChatColor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,5 +24,11 @@ public class ColorParser {
         }
         message = matcher.appendTail(buffer).toString();
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    public static List<String> parseList(List<String> list) {
+        List<String> parsedList = new ArrayList<>();
+        for (String line : list) parsedList.add(parseString(line));
+        return parsedList;
     }
 }

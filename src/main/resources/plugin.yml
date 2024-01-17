@@ -12,5 +12,7 @@ commands:
 permissions:
   mreputation.use:
     description: Permission to use the reputation command
+  mreputation.gui:
+    description: Permission to use gui
   mreputation.reset:
     description: Permission to use the reputation reset command

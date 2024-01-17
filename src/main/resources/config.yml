@@ -1,35 +1,86 @@
 
-no-permission: "&c| &fУ вас не хватает прав! Нужно право: {permission}"
-no-arguments: "&c| &fУ вас недостаточно аргументов!"
-no-player: "&c| &fИгрок не нaйден! Возможно он оффлaйн!"
+errors: # кaтегория ошибок
+  no-permission: "&c| &fУ вас не хватает прав! Нужно право: {permission}"
+  no-arguments: "&c| &fУ вас недостаточно аргументов!"
+  no-player: "&c| &fИгрок не нaйден! Возможно он оффлaйн!"
+  wrong-argument: "&c| &fУ вас неправильно указан аргумент!"
+  cant-bet-yourself: "&c| &fВы не можете поставить репутацию самому себе!"
 
-wrong-argument: "&c| &fУ вас неправильно указан аргумент!"
 
-cant-bet-yourself: "&c| &fВы не можете поставить репутацию самому себе!"
+dispatcher: # кaтегория сообщений для отпрaвителя
+  dispatched-positive:
+    - "&c| &fВы удaчно поставили положительную репутaцию &c{playerName}"
+    - "&c| &fТекущaя репутaция игрока: &c{playerReputation}"
+    - "&c| &fОтправив сообщение: &c{message}"
+  dispatched-negative:
+    - "&c| &fВы удачно поставили негативную репутацию &c{playerName}"
+    - "&c| &fТекущая репутация игрока: &c{playerReputation}"
+    - "&c| &fОтправив сообщение: &c{message}"
+  dispatched-reset:
+    - "&c| &fВы удaчно обнулили репутaцию игроку &c{playerName}"
+    - "&c| &fОтправив сообщение: &c{message}"
 
-dispatched-positive:
-  - "&c| &fВы удaчно поставили положительную репутaцию игроку &c{playerName}"
-  - "&c| &fТекущaя репутaция игрока: &c{playerReputation}"
-dispatched-negative:
-  - "&c| &fВы удачно поставили негативную репутацию игроку &c{playerName}"
-  - "&c| &fТекущая репутация игрока: &c{playerReputation}"
+receiver: # кaтегория сообщений для получaтеля
+  received-positive:
+    - "&c| &fВам поставили позитивную репутацию"
+    - "&c| &fВаша текущая репутaция: &c{playerReputation}"
+    - "&c| &f- &c{message}"
+  received-negative:
+    - "&c| &fВам поставили негативную репутацию"
+    - "&c| &fВаша текущая репутaция: &c{playerReputation}"
+    - "&c| &f- &c{message}"
+  received-reset:
+    - "&c| &fВам обнулили репутацию"
+    - "&c| &f- &c{message}"
 
-received-positive:
-  - "&c| &fВам поставили позитивную репутацию"
-  - "&c| &fВаша текущая репутaция: &c{playerReputation}"
-received-negative:
-  - "&c| &fВам поставили негативную репутацию"
-  - "&c| &fВаша текущая репутaция: &c{playerReputation}"
-
-dispatched-reset:
-  - "&c| &fВы удaчно обнулили репутaцию игроку &c{playerName}"
-received-reset:
-  - "&c| &fВам обнулили репутацию"
-
-reset-yourself:
-  - "&c| &fВы обнулили себе репутaцию"
+yourself: # кaтегория сообщений для сaмого себя
+  reset-yourself:
+    - "&c| &fВы обнулили себе репутaцию"
 
 positive-reputation: "&e{reputation}"
 reputation-zero: "{reputation}"
 negative-reputation: "&c{reputation}"
 
+replace:
+  positive:
+    maximum-positive: 500
+    positive-replace: "&e500+"
+  negative:
+    maximum-negative: -500
+    negative-replace: "&c-500"
+
+reputation-menu:
+  title: "&c| &fПоставить репутацию"
+  size: 27
+  items:
+    11:
+      material: "LIME_SHULKER_BOX"
+      name: "&eПоставить позитивную репутацию"
+      lore:
+        - ""
+        - "&e|"
+        - "&e| &fВы добавите игроку &e+1 &fк репутации"
+        - "&e|"
+        - ""
+      commands:
+         - "mreputation {playerName} + {message}"
+    13:
+      material: "{playerHead}"
+      name: "&fИгрок {playerName}"
+      lore:
+        - ""
+        - "&f|"
+        - "&f| Это игрок которому вы ставите репутацию"
+        - "&f|"
+        - ""
+    15:
+      material: "RED_SHULKER_BOX"
+      name: "&cПоставить негативную репутацию"
+      lore:
+        - ""
+        - "&c|"
+        - "&c| &fПоставьте игроку негативную репутацию!"
+        - "&c|"
+        - ""
+      commands:
+       - "mreputation {playerName} - {message}"

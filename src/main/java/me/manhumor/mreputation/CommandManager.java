@@ -11,43 +11,50 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
     private final MReputation instance;
+
+    private final FileConfiguration config;
     private final Map<String, List<String>> dispatcherMap;
     private final Map<String, List<String>> receiverMap;
 
     private final String noPermission;
     private final String noArguments;
     private final String noPlayer;
-    private final String cantBetYourself;
     private final String wrongArgument;
+    private final String cantBetYourself;
 
     private final List<String> resetYourself;
 
+    private final HashMap<String, String> messages;
+
     public CommandManager() {
         this.instance = MReputation.getInstance();
-        FileConfiguration config = instance.getConfig();
+        this.config = instance.getConfig();
 
-        this.dispatcherMap = new HashMap<>();
-        this.receiverMap = new HashMap<>();
+        this.dispatcherMap = Map.of(
+                "+", ColorParser.parseList(config.getStringList("dispatcher.dispatched-positive")),
+                "-", ColorParser.parseList(config.getStringList("dispatcher.dispatched-negative")),
+                "reset", ColorParser.parseList(config.getStringList("dispatcher.dispatched-reset"))
+        );
 
-        this.dispatcherMap.put("+", config.getStringList("dispatched-positive"));
-        this.dispatcherMap.put("-", config.getStringList("dispatched-negative"));
-        this.dispatcherMap.put("reset", config.getStringList("dispatched-reset"));
+        this.receiverMap = Map.of(
+                "+", ColorParser.parseList(config.getStringList("receiver.received-positive")),
+                "-", ColorParser.parseList(config.getStringList("receiver.received-negative")),
+                "reset", ColorParser.parseList(config.getStringList("receiver.received-reset"))
+        );
 
-        this.receiverMap.put("+", config.getStringList("received-positive"));
-        this.receiverMap.put("-", config.getStringList("received-negative"));
-        this.receiverMap.put("reset", config.getStringList("received-reset"));
+        this.noPermission = ColorParser.parseString(config.getString("errors.no-permission"));
+        this.noArguments = ColorParser.parseString(config.getString("errors.no-arguments"));
+        this.noPlayer = ColorParser.parseString(config.getString("errors.no-player"));
+        this.wrongArgument = ColorParser.parseString(config.getString("errors.wrong-argument"));
+        this.cantBetYourself = ColorParser.parseString(config.getString("errors.cant-bet-yourself"));
 
-        this.noPermission = ColorParser.parseString(config.getString("no-permission")
-                .replaceAll("\\{permission}", "mreputation.use"));
-        this.noArguments = ColorParser.parseString(config.getString("no-arguments"));
-        this.noPlayer = ColorParser.parseString(config.getString("no-player"));
-        this.cantBetYourself = ColorParser.parseString(config.getString("cant-bet-yourself"));
-        this.wrongArgument = ColorParser.parseString(config.getString("wrong-argument"));
+        this.resetYourself = ColorParser.parseList(config.getStringList("yourself.reset-yourself"));
 
-        this.resetYourself = config.getStringList("reset-yourself");
+        this.messages = InventoryManager.messages;
     }
 
     @Override
@@ -58,12 +65,17 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         String playerName = player.getName();
 
         if (!player.hasPermission("mreputation.use")) {
-            player.sendMessage(noPermission);
+            player.sendMessage(noPermission.replaceAll("\\{permission}", "mreputation.use"));
             return true;
         }
 
         if (args.length < 2) {
             player.sendMessage(noArguments);
+            return true;
+        }
+
+        if (!Arrays.asList("+", "-", "gui", "reset").contains(args[1].toLowerCase())) {
+            player.sendMessage(wrongArgument);
             return true;
         }
 
@@ -74,60 +86,71 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         String playerMentionedName = playerMentioned.getName();
+        if (playerName.equalsIgnoreCase(playerMentionedName) && !args[1].toLowerCase().equalsIgnoreCase("reset")) {
+            player.sendMessage(cantBetYourself);
+            return true;
+        }
 
         int reputation = instance.getReputation(playerMentionedName);
 
-        if (dispatcherMap.containsKey(args[1])) {
-            if (playerName.equalsIgnoreCase(playerMentionedName) && !args[1].equalsIgnoreCase("reset")) {
-                player.sendMessage(cantBetYourself);
+        String message = "";
+
+        if (args.length > 2) message = String.join(" ", Arrays.asList(args).subList(2, args.length));
+
+        switch (args[1]) {
+            case "+" -> ++reputation;
+            case "-" -> --reputation;
+            case "gui" -> {
+                if (!player.hasPermission("mreputation.gui")) {
+                    player.sendMessage(noPermission.replaceAll("\\{permission}", "mreputation.gui"));
+                    return true;
+                }
+
+                messages.remove(playerName);
+                player.openInventory(InventoryManager.createInventory(playerMentioned));
+                if (!message.trim().isEmpty()) messages.put(playerName, message);
                 return true;
             }
-
-            switch (args[1]) {
-                case "+":
-                    reputation++;
-                    break;
-                case "-":
-                    reputation--;
-                    break;
-                default:
-                    if (!player.hasPermission("mreputation.reset")) {
-                        player.sendMessage(noPermission);
-                        return true;
-                    }
-                    reputation = 0;
-                    break;
+            case "reset" -> {
+                if (!player.hasPermission("mreputation.reset")) {
+                    player.sendMessage(noPermission.replaceAll("\\{permission}", "mreputation.reset"));
+                    return true;
+                }
+                if (playerName.equalsIgnoreCase(playerMentionedName)) {
+                    sendList(playerMentioned, resetYourself, playerMentionedName, reputation, message);
+                    instance.setReputation(playerMentionedName, 0);
+                    return true;
+                }
+                reputation = 0;
             }
-            if (args[1].equalsIgnoreCase("reset") && playerName.equalsIgnoreCase(playerMentionedName)) {
-                sendList(player, resetYourself, playerMentionedName, reputation);
-            } else {
-                sendList(player, dispatcherMap.get(args[1]), playerMentionedName, reputation);
-                sendList(playerMentioned, receiverMap.get(args[1]), playerName, reputation);
-            }
-            instance.setReputation(playerMentionedName, reputation);
-        } else {
-            player.sendMessage(wrongArgument);
         }
+
+        sendList(player, dispatcherMap.get(args[1]), playerMentionedName, reputation, message);
+        sendList(playerMentioned, receiverMap.get(args[1]), playerMentionedName, reputation, message);
+        instance.setReputation(playerMentionedName, reputation);
         return true;
     }
 
-    @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        List<String> complete = new ArrayList<>();
-        if (args.length==1) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                complete.add(player.getName());
-            }
+        if (args.length == 1) {
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
         }
-        if (args.length==2) complete = Arrays.asList("+", "-", "reset");
-        return complete;
+        else if (args.length == 2) {
+            return Arrays.asList("+", "-", "gui", "reset");
+        }
+        else if (args.length == 3) {
+            return Collections.singletonList("(сообщение)");
+        }
+
+        return null;
     }
 
-    public void sendList(Player player, List<String> list, String mentionedName, int reputation) {
+    public void sendList(Player player, List<String> list, String mentionedName, int reputation, String message) {
         for (String line : list) {
-            player.sendMessage(ColorParser.parseString(line
+            player.sendMessage(line
                     .replaceAll("\\{playerName}", mentionedName)
-                    .replaceAll("\\{playerReputation}", Integer.toString(reputation))));
+                    .replaceAll("\\{playerReputation}", Integer.toString(reputation))
+                    .replaceAll("\\{message}", message));
         }
     }
 }

@@ -31,15 +31,30 @@ public final class MReputation extends JavaPlugin {
             new ReputationExpansion().register();
         }
 
+        InventoryManager.initMap();
+
         CommandManager commandManager = new CommandManager();
         getCommand("mreputation").setExecutor(commandManager);
         getCommand("mreputation").setTabCompleter(commandManager);
+
+        Bukkit.getPluginManager().registerEvents(new InventoryManager(), this);
+
+        getLogger().info("§c. . . . . . . . . . . .");
+        getLogger().info("§c| §fPlugin §cM§fReputation");
+        getLogger().info("§c| §f- §cSuccessful §floaded");
+        getLogger().info("§c| §f- §cI wish you §fluck!!!");
+        getLogger().info("§c˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙");
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
         database.close();
+        getLogger().info("§c. . . . . . . . . . . .");
+        getLogger().info("§c| §fPlugin §cM§fReputation");
+        getLogger().info("§c| §f- §cSuccessful §funloaded");
+        getLogger().info("§c| §f- §cI wish you §fluck!!!");
+        getLogger().info("§c˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙ ˙");
     }
 
     public int getReputation(String playerName) {
