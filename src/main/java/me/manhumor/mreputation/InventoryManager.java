@@ -7,13 +7,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import javax.swing.event.MenuDragMouseEvent;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,7 +28,7 @@ public class InventoryManager implements Listener {
     private static int size;
     private static String title;
 
-    public static HashMap<String, String> messages;
+    public static HashMap<String, String> messages = new HashMap<>();
 
     public InventoryManager() {
         this.instance = MReputation.getInstance();
@@ -91,6 +94,10 @@ public class InventoryManager implements Listener {
         }
         player.closeInventory();
     }
+    @EventHandler
+    public void onMenuInteract(Inventory event) {
+
+    }
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
@@ -98,9 +105,5 @@ public class InventoryManager implements Listener {
 
         String playerName = event.getView().getPlayer().getName();
         if (messages.containsKey(playerName)) messages.remove(playerName);
-    }
-
-    public static void initMap() {
-        messages = new HashMap<>();
     }
 }

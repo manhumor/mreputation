@@ -25,10 +25,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private final String noPlayer;
     private final String wrongArgument;
     private final String cantBetYourself;
+    private final String hasCooldown;
 
     private final List<String> resetYourself;
-
-    private final HashMap<String, String> messages;
 
     public CommandManager() {
         this.instance = MReputation.getInstance();
@@ -52,9 +51,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         this.wrongArgument = ColorParser.parseString(config.getString("errors.wrong-argument"));
         this.cantBetYourself = ColorParser.parseString(config.getString("errors.cant-bet-yourself"));
 
-        this.resetYourself = ColorParser.parseList(config.getStringList("yourself.reset-yourself"));
+        this.hasCooldown = ColorParser.parseString(config.getString("errors.has-cooldown"));
 
-        this.messages = InventoryManager.messages;
+        this.resetYourself = ColorParser.parseList(config.getStringList("yourself.reset-yourself"));
     }
 
     @Override
@@ -79,6 +78,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (!CooldownManager.checkCooldown(playerName)) {
+            player.sendMessage(hasCooldown.replaceAll("\\{cooldown}", CooldownManager.getCooldown(playerName)));
+            return true;
+        }
+
         Player playerMentioned = Bukkit.getPlayer(args[0]);
         if (playerMentioned == null || !playerMentioned.isOnline()) {
             player.sendMessage(noPlayer);
@@ -86,6 +90,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         String playerMentionedName = playerMentioned.getName();
+
         if (playerName.equalsIgnoreCase(playerMentionedName) && !args[1].toLowerCase().equalsIgnoreCase("reset")) {
             player.sendMessage(cantBetYourself);
             return true;
@@ -106,9 +111,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                messages.remove(playerName);
+                InventoryManager.messages.remove(playerName);
                 player.openInventory(InventoryManager.createInventory(playerMentioned));
-                if (!message.trim().isEmpty()) messages.put(playerName, message);
+                if (!message.trim().isEmpty()) InventoryManager.messages.put(playerName, message);
                 return true;
             }
             case "reset" -> {
@@ -119,6 +124,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 if (playerName.equalsIgnoreCase(playerMentionedName)) {
                     sendList(playerMentioned, resetYourself, playerMentionedName, reputation, message);
                     instance.setReputation(playerMentionedName, 0);
+
+                    CooldownManager.addCooldown(playerName);
+
                     return true;
                 }
                 reputation = 0;
@@ -128,6 +136,9 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         sendList(player, dispatcherMap.get(args[1]), playerMentionedName, reputation, message);
         sendList(playerMentioned, receiverMap.get(args[1]), playerMentionedName, reputation, message);
         instance.setReputation(playerMentionedName, reputation);
+
+        CooldownManager.addCooldown(playerName);
+
         return true;
     }
 

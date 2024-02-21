@@ -39,7 +39,7 @@ public class ReputationExpansion extends PlaceholderExpansion {
 
         if (params.equals("get")) {
             int reputation = instance.getReputation(player.getName());
-            String result = "";
+            String result;
 
             if (reputation > replacePositiveSection.getInt("maximum-positive") ||
                     reputation < replaceNegativeSection.getInt("maximum-negative")) {
