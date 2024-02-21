@@ -7,16 +7,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import javax.swing.event.MenuDragMouseEvent;
 import java.util.HashMap;
 import java.util.List;
 
@@ -93,10 +90,6 @@ public class InventoryManager implements Listener {
             }
         }
         player.closeInventory();
-    }
-    @EventHandler
-    public void onMenuInteract(Inventory event) {
-
     }
 
     @EventHandler
