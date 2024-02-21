@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -33,25 +34,26 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         this.instance = MReputation.getInstance();
         this.config = instance.getConfig();
 
+        ConfigurationSection dispatcher = config.getConfigurationSection("dispatcher");
         this.dispatcherMap = Map.of(
-                "+", ColorParser.parseList(config.getStringList("dispatcher.dispatched-positive")),
-                "-", ColorParser.parseList(config.getStringList("dispatcher.dispatched-negative")),
-                "reset", ColorParser.parseList(config.getStringList("dispatcher.dispatched-reset"))
+                "+", ColorParser.parseList(dispatcher .getStringList("dispatched-positive")),
+                "-", ColorParser.parseList(dispatcher .getStringList("dispatched-negative")),
+                "reset", ColorParser.parseList(dispatcher .getStringList("dispatched-reset"))
         );
-
+        ConfigurationSection receiver = config.getConfigurationSection("dispatcher");
         this.receiverMap = Map.of(
-                "+", ColorParser.parseList(config.getStringList("receiver.received-positive")),
-                "-", ColorParser.parseList(config.getStringList("receiver.received-negative")),
-                "reset", ColorParser.parseList(config.getStringList("receiver.received-reset"))
+                "+", ColorParser.parseList(receiver.getStringList("received-positive")),
+                "-", ColorParser.parseList(receiver.getStringList("received-negative")),
+                "reset", ColorParser.parseList(receiver.getStringList("received-reset"))
         );
+        ConfigurationSection errors = config.getConfigurationSection("errors");
+        this.noPermission = ColorParser.parseString(errors.getString("no-permission"));
+        this.noArguments = ColorParser.parseString(errors.getString("no-arguments"));
+        this.noPlayer = ColorParser.parseString(errors.getString("no-player"));
+        this.wrongArgument = ColorParser.parseString(errors.getString("wrong-argument"));
+        this.cantBetYourself = ColorParser.parseString(errors.getString("cant-bet-yourself"));
 
-        this.noPermission = ColorParser.parseString(config.getString("errors.no-permission"));
-        this.noArguments = ColorParser.parseString(config.getString("errors.no-arguments"));
-        this.noPlayer = ColorParser.parseString(config.getString("errors.no-player"));
-        this.wrongArgument = ColorParser.parseString(config.getString("errors.wrong-argument"));
-        this.cantBetYourself = ColorParser.parseString(config.getString("errors.cant-bet-yourself"));
-
-        this.hasCooldown = ColorParser.parseString(config.getString("errors.has-cooldown"));
+        this.hasCooldown = ColorParser.parseString(errors.getString("has-cooldown"));
 
         this.resetYourself = ColorParser.parseList(config.getStringList("yourself.reset-yourself"));
     }
